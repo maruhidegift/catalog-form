@@ -840,7 +840,7 @@ async function handleSubmit(ev){
 
   const btn = g('subBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="sp"></span>送信中...';
+  btn.innerHTML = '<span class="sp"></span>送信中...少々お待ちください';
   g('errBanner').style.display = 'none';
 
   const params = new URLSearchParams(new FormData(g('mainForm')));

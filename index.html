@@ -814,7 +814,7 @@ function validate(){
     if(!g('t1').value){
       showErr('第1希望日の時間帯をご選択ください'); g('t1').focus(); return false;
     }
-  }
+  
   // iOS Safariはmin属性を無視するためJSで必ずチェック
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + (MIN_DAYS || 14));

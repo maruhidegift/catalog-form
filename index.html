@@ -538,8 +538,8 @@ select{
         <label class="lbl">第1希望日<span class="req">必須</span></label>
         <div class="dt-grid">
           <input type="date" id="d1" name="deliveryDate1" onchange="checkDate('d1','d1Err')">
-          <select name="deliveryTime1">
-            <option value="">時間帯を選択</option>
+          <select id="t1" name="deliveryTime1">
+            <option value="" disabled selected>時間帯を選択してください</option>
             <option>指定なし</option>
             <option>午前中（8:00〜12:00）</option>
             <option>14時〜16時</option>
@@ -557,8 +557,7 @@ select{
         <div class="dt-grid">
           <input type="date" id="d2" name="deliveryDate2" onchange="checkDate('d2','d2Err')">
           <select name="deliveryTime2">
-            <option value="">時間帯を選択</option>
-            <option>指定なし</option>
+            <option selected>指定なし</option>
             <option>午前中（8:00〜12:00）</option>
             <option>14時〜16時</option>
             <option>16時〜18時</option>
@@ -810,7 +809,11 @@ function validate(){
     }
   }
   if(!g('d1').value){
-    showErr('第1希望日をご選択ください'); g('d1').focus(); return false;
+      showErr('第1希望日をご選択ください'); g('d1').focus(); return false;
+    }
+    if(!g('t1').value){
+      showErr('第1希望日の時間帯をご選択ください'); g('t1').focus(); return false;
+    }
   }
   // iOS Safariはmin属性を無視するためJSで必ずチェック
   const minDate = new Date();

@@ -502,15 +502,18 @@ select{
         <input type="text" id="building" name="building"  autocomplete="address-line2">
       </div>
 
-      <div class="frow two">
-        <div>
-          <label class="lbl" for="name">氏名（漢字）<span class="req">必須</span></label>
-          <input type="text" id="name" name="name"  autocomplete="name">
-        </div>
-        <div>
-          <label class="lbl" for="kana">フリガナ<span class="req">必須</span></label>
-          <input type="text" id="kana" name="furigana" >
-        </div>
+      <div class="frow">
+        <label class="lbl" for="name">氏名（漢字）<span class="req">必須</span></label>
+        <input type="text" id="name" name="name" autocomplete="name" placeholder="例）山田 花子">
+        <p class="hint">姓と名の両方をご入力ください</p>
+      </div>
+
+      <div class="frow">
+        <label class="lbl" for="kana">フリガナ（全角カタカナ）<span class="req">必須</span></label>
+        <input type="text" id="kana" name="furigana" autocomplete="off" autocapitalize="off" placeholder="例）ヤマダ ハナコ"
+          onblur="checkKana()">
+        <p class="hint">氏名の読みをカタカナでご入力ください（ひらがなは自動でカタカナに変わります）</p>
+        <p class="ferr" id="kanaErr"></p>
       </div>
 
       <div class="frow">
@@ -788,6 +791,29 @@ function chkSubmit(){
 
 g('agree').addEventListener('change', chkSubmit);
 
+// ===== フリガナ（全角カタカナのみ） =====
+// 半角カナ→全角、ひらがな→カタカナ、全角スペース→半角スペースにそろえる。
+function normalizeKana(v){
+  let s = String(v || '');
+  if (s.normalize) s = s.normalize('NFKC');
+  s = s.replace(/[\u3041-\u3096]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) + 0x60); });
+  return s.replace(/\s+/g, ' ').trim();
+}
+// カタカナ・長音・中点・空白だけで、カタカナが1文字以上あること。
+function isKana(v){
+  return /^[\u30A1-\u30FA\u30FC\u30FB ]+$/.test(v) && /[\u30A1-\u30FA]/.test(v);
+}
+const KANA_MSG = 'フリガナは全角カタカナでご入力ください（漢字・英数字は使えません）。例）ヤマダ ハナコ';
+// 入力欄を離れたときに整形して検査する。空欄のときは何も出さない（送信時に必須チェック）。
+function checkKana(){
+  const el = g('kana'), err = g('kanaErr');
+  el.value = normalizeKana(el.value);
+  const bad = el.value !== '' && !isKana(el.value);
+  err.textContent = bad ? KANA_MSG : '';
+  err.style.display = bad ? 'block' : 'none';
+  return !bad;
+}
+
 // ===== バリデーション =====
 function validate(){
   const checks = [
@@ -806,6 +832,18 @@ function validate(){
     const el = g(id);
     if(!el || !el.value.trim()){
       showErr(label + 'をご入力ください'); el && el.focus(); return false;
+    }
+  }
+  // フリガナ: 全角カタカナのみ（氏名欄に姓、フリガナ欄に名を入れる誤入力を防ぐ）
+  if(!checkKana()){
+    showErr(KANA_MSG); g('kana').focus(); return false;
+  }
+  // 氏名: 姓だけ（2文字以下）に見えるときは確認する。2文字の氏名の方もいるので、止めずに確認にとどめる。
+  const nameVal = g('name').value.replace(/\s+/g, ' ').trim();
+  g('name').value = nameVal;
+  if(nameVal.replace(/ /g, '').length <= 2){
+    if(!confirm('氏名は「' + nameVal + '」でよろしいですか？\n\n姓と名の両方をご入力ください（例：山田 花子）。\n\n［OK］このまま進む\n［キャンセル］入力し直す')){
+      g('name').focus(); return false;
     }
   }
   if(!g('d1').value){
